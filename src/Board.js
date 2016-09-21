@@ -28,7 +28,7 @@
       var matrix = this.rows();
       var colArray = [];
       for (var i = 0; i < matrix.length; i++) {
-        colArray.push(matrix[i][colIndex])
+        colArray.push(matrix[i][colIndex]);
       }
       return colArray;
     },
@@ -90,8 +90,8 @@
     hasRowConflictAt: function(rowIndex) {
       var row = this.rows()[rowIndex];
       var sum = _.reduce(row, function(elem, memo) { 
-        return elem + memo
-      }, 0)
+        return elem + memo;
+      }, 0);
       return sum > 1; // fixme
     },
 
@@ -114,8 +114,8 @@
     hasColConflictAt: function(colIndex) {
       var col = this.getCol(colIndex);
       var sum = _.reduce(col, function(elem, memo) { 
-        return elem + memo
-      }, 0)
+        return elem + memo;
+      }, 0);
       return sum > 1;
     },
 
@@ -128,19 +128,54 @@
       }
       return false;
     },
+    
+    // homemade method to check whether a diagonal has several '1's
+    diagonalChecker: function(startingCol, startingRow) {
+      var storage = [];
+      var matrix = this.rows();
+      var size = this.rows().length;
+      var row = startingRow || 0;
+      var col = startingCol;
 
+      while (row < size && col < size) {
+        storage.push(matrix[row][col]);
+        row++;
+        col++;
+      }
 
+      var sum = _.reduce(storage, function(elem, memo) { 
+        return elem + memo;
+      }, 0);
+      return sum > 1;
+    },
 
     // Major Diagonals - go from top-left to bottom-right
     // --------------------------------------------------------------
     //
     // test if a specific major diagonal on this board contains a conflict
-    hasMajorDiagonalConflictAt: function(majorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
+    hasMajorDiagonalConflictAt: function(startingCol) {
+      var size = this.rows().length;
+
+      if (startingCol === 0) {
+        for (var i = 0; i < size; i++) {
+          if (this.diagonalChecker(startingCol, i)) {
+            return true;
+          }
+        }
+      } else {
+        return this.diagonalChecker(startingCol);
+      }
+      return false;
     },
+
 
     // test if any major diagonals on this board contain conflicts
     hasAnyMajorDiagonalConflicts: function() {
+      for ( var i = 0; i < this.rows().length; i++) {
+        if (this.hasMajorDiagonalConflictAt(i)) {
+          return true;
+        }
+      }
       return false; // fixme
     },
 
@@ -156,7 +191,16 @@
 
     // test if any minor diagonals on this board contain conflicts
     hasAnyMinorDiagonalConflicts: function() {
-      return false; // fixme
+      // reverse each row and store into reversed matrix
+      // call hasAnyMajorDiagonalConflicts on reversed matrix and result result
+      var currMatrix = this.rows();
+      var reverseMatrix = _.map(currMatrix, function(row) {
+        return row.reverse();
+      });
+      console.log(reverseMatrix);
+      reverseBoard = new Board(reverseMatrix);
+
+      return reverseBoard.hasAnyMajorDiagonalConflicts();
     }
 
     /*--------------------  End of Helper Functions  ---------------------*/
