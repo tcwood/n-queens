@@ -30,32 +30,38 @@ window.findNRooksSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  debugger;
-  var counter = 0;
+  var results = {};
 
-  var solutionCounter = function (roundsLeft, board) {
+  var solutionCounter = function (roundsLeft, posRows, posCols, board) {
     board = board || new Board({n: n});
-    for (var row = 0; row < n; row++) {
-      for (var col = 0; col < n; col++) {
+    for (var i = 0; i < posRows.length; i++) {
+      for (var j = 0; j < posCols.length; j++) {
+        var row = posRows[i];
+        var col = posCols[j];
 
         if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
           board.togglePiece(row, col);              // toggle (row, col)
-          if (board.hasAnyRooksConflicts()) {   //if conflicts
-            board.togglePiece(row, col);            // toggle back
+          posRows.splice(_.indexOf(posRows, row), 1);
+          posCols.splice(_.indexOf(posCols, col), 1);
+          
+          if (roundsLeft === 0) {
+            results[JSON.stringify(board.rows())] = 1;                       //if rounds left is 0, INCREMENT COUNTER
+            
           } else {
-            if (roundsLeft === 0) {
-              counter ++;                       //if rounds left is 0 and no conflicts, INCREMENT COUNTER
-              // board = new Board({n: n});
-            } else {
-              solutionCounter(roundsLeft - 1, board);
-              board = new Board({n: n});
-            }
+            solutionCounter(roundsLeft - 1, posRows, posCols, board);
+            !!!!! This part below doesn't work if n is bigger than 2!!!! Doesn't put back in pieces that should be there or take out possible rows / columns of those pieces!!!!!!
+            board = new Board({n: n});
+            posRows = _.range(0, n);
+            posCols = _.range(0, n);
           }
         }
       }
     }
   };
-  solutionCounter(n - 1);
+  var posCols = _.range(0, n);
+  var posRows = _.range(0, n);
+
+  solutionCounter(n - 1, posRows, posCols);
   //roundsLeft = n  <-- n total addPiece function calls
   //solutionCount = 0
   //Create n^2 boards, each with a different starting position
@@ -71,7 +77,11 @@ window.countNRooksSolutions = function(n) {
               //keep going for (n = size) number of recursive calls
                 //if no conflicts, add 1 to solutionCount
 
+  var counter = Object.keys(results).length;
+  console.log(results);
+
   console.log('Number of solutions for ' + n + ' rooks:', counter);
+
   return counter;
 };
 
