@@ -197,7 +197,6 @@
       var reverseMatrix = _.map(currMatrix, function(row) {
         return row.reverse();
       });
-      console.log(reverseMatrix);
       reverseBoard = new Board(reverseMatrix);
 
       return reverseBoard.hasAnyMajorDiagonalConflicts();

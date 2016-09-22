@@ -30,8 +30,35 @@ window.findNRooksSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  debugger;
+  var counter = 0;
+
+  var solutionCounter = function (roundsLeft, board) {
+    board = board || new Board({n: n});
+    for (var row = 0; row < n; row++) {
+      for (var col = 0; col < n; col++) {
+
+        if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
+          board.togglePiece(row, col);              // toggle (row, col)
+          if (board.hasAnyRooksConflicts()) {   //if conflicts
+            board.togglePiece(row, col);            // toggle back
+          } else {
+            if (roundsLeft === 0) {
+              counter ++;                       //if rounds left is 0 and no conflicts, INCREMENT COUNTER
+              // board = new Board({n: n});
+            } else {
+              solutionCounter(roundsLeft - 1, board);
+              board = new Board({n: n});
+            }
+          }
+        }
+      }
+    }
+  };
+  solutionCounter(n - 1);
   //roundsLeft = n  <-- n total addPiece function calls
+  //solutionCount = 0
+  //Create n^2 boards, each with a different starting position
   //iterate through all possible starting points (nested loops for rows / cols)
     //place a rook at each starting point
       //Recursively call addPiece(nextMove, roundsLeft) function for each possible next move (n^2 - num of curr pieces)
@@ -42,10 +69,10 @@ window.countNRooksSolutions = function(n) {
             //if there are conflicts, STOP! Don't go any deeper, don't return anything
             //else, recursively call addPiece function
               //keep going for (n = size) number of recursive calls
-                //if no conflicts, return solution
+                //if no conflicts, add 1 to solutionCount
 
-  console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
-  return solutionCount;
+  console.log('Number of solutions for ' + n + ' rooks:', counter);
+  return counter;
 };
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
