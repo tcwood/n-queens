@@ -40,19 +40,26 @@ window.countNRooksSolutions = function(n) {
         var col = posCols[j];
 
         if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
-          board.togglePiece(row, col);              // toggle (row, col)
-          posRows.splice(_.indexOf(posRows, row), 1);
-          posCols.splice(_.indexOf(posCols, col), 1);
-          
+          board.togglePiece(row, col);              // toggle (row, col) putting in a piece
+      
           if (roundsLeft === 0) {
-            results[JSON.stringify(board.rows())] = 1;                       //if rounds left is 0, INCREMENT COUNTER
-            
+            results[JSON.stringify(board.rows())] = 1;                       //if rounds left is 0, add result to hash
+            board.togglePiece(row, col );
           } else {
+            posRows.splice(_.indexOf(posRows, row), 1);   // take toggled row out of available options
+            posCols.splice(_.indexOf(posCols, col), 1);   //take toggled col out of available options
+
             solutionCounter(roundsLeft - 1, posRows, posCols, board);
-            !!!!! This part below doesn't work if n is bigger than 2!!!! Doesn't put back in pieces that should be there or take out possible rows / columns of those pieces!!!!!!
-            board = new Board({n: n});
-            posRows = _.range(0, n);
-            posCols = _.range(0, n);
+            // !!!!! This part below doesn't work if n is bigger than 2!!!! Doesn't put back in pieces that should be there or take out possible rows / columns of those pieces!!!!!!
+            // board = new Board({n: n});
+            // posRows = _.range(0, n);
+            // posCols = _.range(0, n);
+
+            board.togglePiece(row, col ); //remove piece from board
+            posRows.push(row);            // add rows, cols back to board b/c of removed piece
+            posCols.push(col);
+            // check what columns and rows of board already have 1's and rest posRows + posCols accordingly
+
           }
         }
       }
