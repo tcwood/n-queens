@@ -1,218 +1,95 @@
-// This file is a Backbone Model (don't worry about what that means)
-// It's part of the Board Visualizer
-// The only portions you need to work on are the helper functions (below)
+/*           _
+   ___  ___ | |_   _____ _ __ ___
+  / __|/ _ \| \ \ / / _ \ '__/ __|
+  \__ \ (_) | |\ V /  __/ |  \__ \
+  |___/\___/|_| \_/ \___|_|  |___/
 
-(function() {
+*/
 
-  window.Board = Backbone.Model.extend({
-
-    initialize: function (params) {
-      if (_.isUndefined(params) || _.isNull(params)) {
-        console.log('Good guess! But to use the Board() constructor, you must pass it an argument in one of the following formats:');
-        console.log('\t1. An object. To create an empty board of size n:\n\t\t{n: %c<num>%c} - Where %c<num> %cis the dimension of the (empty) board you wish to instantiate\n\t\t%cEXAMPLE: var board = new Board({n:5})', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: grey;');
-        console.log('\t2. An array of arrays (a matrix). To create a populated board of size n:\n\t\t[ [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...], [%c<val>%c,%c<val>%c,%c<val>%c...] ] - Where each %c<val>%c is whatever value you want at that location on the board\n\t\t%cEXAMPLE: var board = new Board([[1,0,0],[0,1,0],[0,0,1]])', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: blue;', 'color: black;', 'color: grey;');
-      } else if (params.hasOwnProperty('n')) {
-        this.set(makeEmptyMatrix(this.get('n')));
-      } else {
-        this.set('n', params.length);
-      }
-    },
-
-    rows: function() {
-      return _(_.range(this.get('n'))).map(function(rowIndex) {
-        return this.get(rowIndex);
-      }, this);
-    },
-
-    getCol: function(colIndex) {
-      var matrix = this.rows();
-      var colArray = [];
-      for (var i = 0; i < matrix.length; i++) {
-        colArray.push(matrix[i][colIndex]);
-      }
-      return colArray;
-    },
-
-    togglePiece: function(rowIndex, colIndex) {
-      this.get(rowIndex)[colIndex] = + !this.get(rowIndex)[colIndex];
-      this.trigger('change');
-    },
-
-    _getFirstRowColumnIndexForMajorDiagonalOn: function(rowIndex, colIndex) {
-      return colIndex - rowIndex;
-    },
-
-    _getFirstRowColumnIndexForMinorDiagonalOn: function(rowIndex, colIndex) {
-      return colIndex + rowIndex;
-    },
-
-    hasAnyRooksConflicts: function() {
-      return this.hasAnyRowConflicts() || this.hasAnyColConflicts();
-    },
-
-    hasAnyQueenConflictsOn: function(rowIndex, colIndex) {
-      return (
-        this.hasRowConflictAt(rowIndex) ||
-        this.hasColConflictAt(colIndex) ||
-        this.hasMajorDiagonalConflictAt(this._getFirstRowColumnIndexForMajorDiagonalOn(rowIndex, colIndex)) ||
-        this.hasMinorDiagonalConflictAt(this._getFirstRowColumnIndexForMinorDiagonalOn(rowIndex, colIndex))
-      );
-    },
-
-    hasAnyQueensConflicts: function() {
-      return this.hasAnyRooksConflicts() || this.hasAnyMajorDiagonalConflicts() || this.hasAnyMinorDiagonalConflicts();
-    },
-
-    _isInBounds: function(rowIndex, colIndex) {
-      return (
-        0 <= rowIndex && rowIndex < this.get('n') &&
-        0 <= colIndex && colIndex < this.get('n')
-      );
-    },
+// hint: you'll need to do a full-search of all possible arrangements of pieces!
+// (There are also optimizations that will allow you to skip a lot of the dead search space)
+// take a look at solversSpec.js to see what the tests are expecting
 
 
-/*
-         _             _     _
-     ___| |_ __ _ _ __| |_  | |__   ___ _ __ ___ _
-    / __| __/ _` | '__| __| | '_ \ / _ \ '__/ _ (_)
-    \__ \ || (_| | |  | |_  | | | |  __/ | |  __/_
-    |___/\__\__,_|_|   \__| |_| |_|\___|_|  \___(_)
-
- */
-    /*=========================================================================
-    =                 TODO: fill in these Helper Functions                    =
-    =========================================================================*/
-
-    // ROWS - run from left to right
-    // --------------------------------------------------------------
-    //
-    // test if a specific row on this board contains a conflict
-    hasRowConflictAt: function(rowIndex) {
-      var row = this.rows()[rowIndex];
-      var sum = _.reduce(row, function(elem, memo) { 
-        return elem + memo;
-      }, 0);
-      return sum > 1; // fixme
-    },
-
-    // test if any rows on this board contain conflicts
-    hasAnyRowConflicts: function() {
-      for (var i = 0; i < this.rows().length; i++) {
-        if (this.hasRowConflictAt(i)) {
-          return true;
-        }
-      }
-      return false;
-    },
+// return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
 
 
 
-    // COLUMNS - run from top to bottom
-    // --------------------------------------------------------------
-    //
-    // test if a specific column on this board contains a conflict
-    hasColConflictAt: function(colIndex) {
-      var col = this.getCol(colIndex);
-      var sum = _.reduce(col, function(elem, memo) { 
-        return elem + memo;
-      }, 0);
-      return sum > 1;
-    },
+window.findNRooksSolution = function(n) {
+  var matrix = new Board({n: n});
 
-    // test if any columns on this board contain conflicts
-    hasAnyColConflicts: function() {
-      for (var i = 0; i < this.rows().length; i++) {
-        if (this.hasColConflictAt(i)) {
-          return true;
-        }
-      }
-      return false;
-    },
-    
-    // homemade method to check whether a diagonal has several '1's
-    diagonalChecker: function(startingCol, startingRow) {
-      var storage = [];
-      var matrix = this.rows();
-      var size = this.rows().length;
-      var row = startingRow || 0;
-      var col = startingCol;
+  for (var i = 0; i < n; i++) {
+    matrix.togglePiece(i, i);
+  }
 
-      while (row < size && col < size) {
-        storage.push(matrix[row][col]);
-        row++;
-        col++;
-      }
+  return matrix.rows();
 
-      var sum = _.reduce(storage, function(elem, memo) { 
-        return elem + memo;
-      }, 0);
-      return sum > 1;
-    },
 
-    // Major Diagonals - go from top-left to bottom-right
-    // --------------------------------------------------------------
-    //
-    // test if a specific major diagonal on this board contains a conflict
-    hasMajorDiagonalConflictAt: function(startingCol) {
-      var size = this.rows().length;
+  // console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
+};
 
-      if (startingCol === 0) {
-        for (var i = 0; i < size; i++) {
-          if (this.diagonalChecker(startingCol, i)) {
-            return true;
+// return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
+window.countNRooksSolutions = function(n) {
+  debugger;
+  var counter = 0;
+
+  var solutionCounter = function (roundsLeft, posRows, posCols, board) {
+    board = board || new Board({n: n});
+    for (var row = 0; row < posRows.length; row++) {
+      for (var col = 0; col < posCols; col++) {
+
+        if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
+          board.togglePiece(row, col);              // toggle (row, col)
+          if (board.hasAnyRooksConflicts()) {   //if conflicts
+            board.togglePiece(row, col);            // toggle back
+          } else {
+            if (roundsLeft === 0) {
+              counter ++;                       //if rounds left is 0 and no conflicts, INCREMENT COUNTER
+              // board = new Board({n: n});
+            } else {
+              solutionCounter(roundsLeft - 1, board);
+              board = new Board({n: n});
+            }
           }
         }
-      } else {
-        return this.diagonalChecker(startingCol);
       }
-      return false;
-    },
-
-
-    // test if any major diagonals on this board contain conflicts
-    hasAnyMajorDiagonalConflicts: function() {
-      for ( var i = 0; i < this.rows().length; i++) {
-        if (this.hasMajorDiagonalConflictAt(i)) {
-          return true;
-        }
-      }
-      return false; // fixme
-    },
-
-
-
-    // Minor Diagonals - go from top-right to bottom-left
-    // --------------------------------------------------------------
-    //
-    // test if a specific minor diagonal on this board contains a conflict
-    hasMinorDiagonalConflictAt: function(minorDiagonalColumnIndexAtFirstRow) {
-      return false; // fixme
-    },
-
-    // test if any minor diagonals on this board contain conflicts
-    hasAnyMinorDiagonalConflicts: function() {
-      // reverse each row and store into reversed matrix
-      // call hasAnyMajorDiagonalConflicts on reversed matrix and result result
-      var currMatrix = this.rows();
-      var reverseMatrix = _.map(currMatrix, function(row) {
-        return row.reverse();
-      });
-      reverseBoard = new Board(reverseMatrix);
-
-      return reverseBoard.hasAnyMajorDiagonalConflicts();
     }
-
-    /*--------------------  End of Helper Functions  ---------------------*/
-
-
-  });
-
-  var makeEmptyMatrix = function(n) {
-    return _(_.range(n)).map(function() {
-      return _(_.range(n)).map(function() {
-        return 0;
-      });
-    });
   };
+  var posCols = _.range(0, n - 1);
+  var posRows = _.range(0, n - 1);
 
-}());
+  solutionCounter(n - 1, posRows, posCols);
+  //roundsLeft = n  <-- n total addPiece function calls
+  //solutionCount = 0
+  //Create n^2 boards, each with a different starting position
+  //iterate through all possible starting points (nested loops for rows / cols)
+    //place a rook at each starting point
+      //Recursively call addPiece(nextMove, roundsLeft) function for each possible next move (n^2 - num of curr pieces)
+        //subtract 1 from roundsLeft 
+        //which creates a new board with prior piece in same place
+        //and a rook on a new spot
+          // check for any conflicts
+            //if there are conflicts, STOP! Don't go any deeper, don't return anything
+            //else, recursively call addPiece function
+              //keep going for (n = size) number of recursive calls
+                //if no conflicts, add 1 to solutionCount
+
+  console.log('Number of solutions for ' + n + ' rooks:', counter);
+  return counter;
+};
+
+// return a matrix (an array of arrays) representing a single nxn chessboard, with n queens placed such that none of them can attack each other
+window.findNQueensSolution = function(n) {
+  var solution = undefined; //fixme
+
+  console.log('Single solution for ' + n + ' queens:', JSON.stringify(solution));
+  return solution;
+};
+
+// return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
+window.countNQueensSolutions = function(n) {
+  var solutionCount = undefined; //fixme
+
+  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
+  return solutionCount;
+};
