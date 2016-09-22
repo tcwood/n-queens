@@ -50,15 +50,10 @@ window.countNRooksSolutions = function(n) {
             posCols.splice(_.indexOf(posCols, col), 1);   //take toggled col out of available options
 
             solutionCounter(roundsLeft - 1, posRows, posCols, board);
-            // !!!!! This part below doesn't work if n is bigger than 2!!!! Doesn't put back in pieces that should be there or take out possible rows / columns of those pieces!!!!!!
-            // board = new Board({n: n});
-            // posRows = _.range(0, n);
-            // posCols = _.range(0, n);
 
             board.togglePiece(row, col ); //remove piece from board
             posRows.push(row);            // add rows, cols back to board b/c of removed piece
             posCols.push(col);
-            // check what columns and rows of board already have 1's and rest posRows + posCols accordingly
 
           }
         }
@@ -69,20 +64,6 @@ window.countNRooksSolutions = function(n) {
   var posRows = _.range(0, n);
 
   solutionCounter(n - 1, posRows, posCols);
-  //roundsLeft = n  <-- n total addPiece function calls
-  //solutionCount = 0
-  //Create n^2 boards, each with a different starting position
-  //iterate through all possible starting points (nested loops for rows / cols)
-    //place a rook at each starting point
-      //Recursively call addPiece(nextMove, roundsLeft) function for each possible next move (n^2 - num of curr pieces)
-        //subtract 1 from roundsLeft 
-        //which creates a new board with prior piece in same place
-        //and a rook on a new spot
-          // check for any conflicts
-            //if there are conflicts, STOP! Don't go any deeper, don't return anything
-            //else, recursively call addPiece function
-              //keep going for (n = size) number of recursive calls
-                //if no conflicts, add 1 to solutionCount
 
   var counter = Object.keys(results).length;
   console.log(results);
