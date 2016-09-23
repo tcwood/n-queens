@@ -32,38 +32,34 @@ window.findNRooksSolution = function(n) {
 window.countNRooksSolutions = function(n) {
   var results = {};
 
-  var solutionCounter = function (roundsLeft, posRows, posCols, board) {
+  var solutionCounter = function (posCols, row, board ) {
     board = board || new Board({n: n});
-    for (var i = 0; i < posRows.length; i++) {
-      for (var j = 0; j < posCols.length; j++) {
-        var row = posRows[i];
-        var col = posCols[j];
 
-        if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
-          board.togglePiece(row, col);              // toggle (row, col) putting in a piece
-      
-          if (roundsLeft === 0) {
-            results[JSON.stringify(board.rows())] = 1;                       //if rounds left is 0, add result to hash
-            board.togglePiece(row, col );
-          } else {
-            posRows.splice(_.indexOf(posRows, row), 1);   // take toggled row out of available options
-            posCols.splice(_.indexOf(posCols, col), 1);   //take toggled col out of available options
+    for (var j = 0; j < posCols.length; j++) {
+      var col = posCols[j];
 
-            solutionCounter(roundsLeft - 1, posRows, posCols, board);
+      if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
+        board.togglePiece(row, col);              // toggle (row, col) putting in a piece
+    
+        if (row === n - 1) {
+          results[JSON.stringify(board.rows())] = 1;                       //if rounds left is 0, add result to hash
+          board.togglePiece(row, col );
+        } else {
+          posCols.splice(_.indexOf(posCols, col), 1);   //take toggled col out of available options
 
-            board.togglePiece(row, col ); //remove piece from board
-            posRows.push(row);            // add rows, cols back to board b/c of removed piece
-            posCols.push(col);
+          solutionCounter(posCols, row + 1, board);
 
-          }
+          board.togglePiece(row, col ); //remove piece from board
+          posCols.push(col);
+          posCols.sort();
+
         }
       }
     }
   };
   var posCols = _.range(0, n);
-  var posRows = _.range(0, n);
 
-  solutionCounter(n - 1, posRows, posCols);
+  solutionCounter( posCols, 0);
 
   var counter = Object.keys(results).length;
   console.log(results);
