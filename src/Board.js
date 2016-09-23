@@ -198,8 +198,13 @@
         return row.reverse();
       });
       reverseBoard = new Board(reverseMatrix);
+      var output = reverseBoard.hasAnyMajorDiagonalConflicts();
 
-      return reverseBoard.hasAnyMajorDiagonalConflicts();
+      _.each(reverseMatrix, function(row) {
+        return row.reverse();
+      });
+
+      return output;
     }
 
     /*--------------------  End of Helper Functions  ---------------------*/

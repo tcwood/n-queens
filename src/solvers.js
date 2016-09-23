@@ -35,8 +35,8 @@ window.countNRooksSolutions = function(n) {
   var solutionCounter = function (posCols, row, board ) {
     board = board || new Board({n: n});
 
-    for (var j = 0; j < posCols.length; j++) {
-      var col = posCols[j];
+    for (var i = 0; i < posCols.length; i++) {
+      var col = posCols[i];
 
       if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
         board.togglePiece(row, col);              // toggle (row, col) putting in a piece
@@ -62,9 +62,6 @@ window.countNRooksSolutions = function(n) {
   solutionCounter( posCols, 0);
 
   var counter = Object.keys(results).length;
-  console.log(results);
-
-  console.log('Number of solutions for ' + n + ' rooks:', counter);
 
   return counter;
 };
@@ -79,8 +76,60 @@ window.findNQueensSolution = function(n) {
 
 // return the number of nxn chessboards that exist, with n queens placed such that none of them can attack each other
 window.countNQueensSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  if (n === 0) {
+    return 1;
+  }
 
-  console.log('Number of solutions for ' + n + ' queens:', solutionCount);
-  return solutionCount;
+  var results = {};
+
+  var solutionCounter = function (posCols, row, board ) {
+    board = board || new Board({n: n});
+
+    for (var i = 0; i < posCols.length; i++) {
+      var col = posCols[i];
+
+      if (board.rows()[row][col] !== 1) {     //if spot is not occupied already
+
+        board.togglePiece(row, col);              // toggle (row, col) putting in a piece
+
+        // if toggling will not create a conflict
+        if ( !board.hasAnyMajorDiagonalConflicts() && !board.hasAnyMinorDiagonalConflicts() ) {
+
+          if (row === n - 1) {
+            results[JSON.stringify(board.rows())] = 1;                       //if in final recursive call...
+            board.togglePiece(row, col );                                    //remove piece if added to results
+          } else {
+            posCols.splice(_.indexOf(posCols, col), 1);   //take toggled col out of available options
+
+            solutionCounter(posCols, row + 1, board);
+
+            board.togglePiece(row, col ); //remove piece from board
+            posCols.push(col);
+            posCols.sort();
+          }
+        } else {
+          board.togglePiece(row, col);        //untoggle piece when there are conflicts
+        } 
+      }  
+    }
+  };
+  var posCols = _.range(0, n);
+
+  solutionCounter( posCols, 0);
+
+  var counter = Object.keys(results).length;
+
+  return counter;
 };
+
+
+
+
+
+
+
+
+
+
+
+
